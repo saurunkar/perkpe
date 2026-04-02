@@ -1,0 +1,20 @@
+[
+    {
+        "merchant": "Myntra",
+        "category": "Shopping",
+        "deal_type": "Bank Offer",
+        "base_discount": 0.20,
+        "card_offers": {
+            "HDFC": 0.10
+        }
+    },
+    {
+        "merchant": "IndiGo",
+        "category": "Travel",
+        "deal_type": "Flash Sale",
+        "base_discount": 0.15,
+        "card_offers": {
+            "HDFC": 0.05
+        }
+    }
+]

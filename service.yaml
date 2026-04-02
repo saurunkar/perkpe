@@ -1,0 +1,44 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: sentinel-finance-os
+  labels:
+    cloud.googleapis.com/location: us-central1
+spec:
+  template:
+    metadata:
+      annotations:
+        # VPC Connector for AlloyDB Private IP access
+        run.googleapis.com/vpc-access-connector: sentinel-vpc-connector
+        # Force all egress through VPC for security
+        run.googleapis.com/vpc-access-egress: all-traffic
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      serviceAccountName: sentinel-finance-os-sa@your-project-id.iam.gserviceaccount.com
+      containers:
+      - image: us-central1-docker.pkg.dev/your-project-id/sentinel/finance-os:latest
+        ports:
+        - name: http1
+          containerPort: 8080
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+        env:
+        - name: APP_ENV
+          value: "production"
+        - name: ALLOYDB_HOST
+          value: "10.0.0.1" # Example Private IP
+        - name: ALLOYDB_DB
+          value: "sentinel_db"
+        - name: ALLOYDB_USER
+          value: "sentinel_app"
+        # Secret Manager Integration for DB Password
+        - name: ALLOYDB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sentinel_db_password
+              key: latest
+        - name: GCP_PROJECT_ID
+          value: "your-project-id"

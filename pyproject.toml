@@ -1,0 +1,20 @@
+[project]
+name = "sentinel-finance-os"
+version = "0.1.0"
+description = "Agent-based finance operating system"
+dependencies = [
+    "google-cloud-aiplatform",
+    "asyncpg",
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "pypdf==5.4.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "testcontainers[postgres]",
+]

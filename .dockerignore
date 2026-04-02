@@ -1,0 +1,27 @@
+# Ignore all virtual environments
+.venv/
+venv/
+env/
+
+# Ignore Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore local environment variables
+.env
+
+# Ignore Antigravity/Agent state
+.gemini/
+.agents/
+brain/
+*.md
+
+# Ignore git history
+.git/
+.gitignore
+
+# Ignore build artifacts
+dist/
+build/

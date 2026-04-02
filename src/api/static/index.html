@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel Finance OS | Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">S</span>
+                <span class="logo-text">Sentinel</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" id="nav-dashboard">Dashboard</a>
+                <a href="#" class="nav-item" id="nav-accounts">Accounts</a>
+                <a href="#" class="nav-item" id="nav-offers">Offers</a>
+                <a href="#" class="nav-item" id="nav-settings">Settings</a>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar">U</div>
+                <div class="user-info">
+                    <p class="user-name">User Name</p>
+                    <p class="user-status">Active</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>Financial Intelligence</h1>
+                <div class="date-display" id="current-date">Thursday, April 2, 2026</div>
+            </header>
+
+            <section class="dashboard-grid">
+                <!-- Offer of the Day Section -->
+                <div class="grid-item span-full" id="offer-of-the-day-container">
+                    <div class="offer-card premium-card">
+                        <div class="card-badge">FINANCIAL WINNING MOVE</div>
+                        <div class="offer-content">
+                            <div class="offer-details">
+                                <h2 id="offer-title">Chase Sapphire Rewards Optimization</h2>
+                                <p id="offer-description">50,000 points expiring soon. Redirect your lifestyle spend to maximize 3x multipliers before Oct 31st.</p>
+                                <div class="offer-meta">
+                                    <span class="erv-badge">ERV: $750.00</span>
+                                    <span class="category-badge">Lifestyle</span>
+                                </div>
+                            </div>
+                            <div class="offer-action">
+                                <button class="btn btn-primary" id="btn-apply">Execute Move</button>
+                                <button class="btn btn-secondary" id="btn-dismiss">Dismiss</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Stats -->
+                <div class="grid-item">
+                    <div class="stat-card">
+                        <h3>Total Balance</h3>
+                        <p class="stat-value">$12,450.00</p>
+                        <span class="trend up">+2.4%</span>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="stat-card">
+                        <h3>Monthly Savings</h3>
+                        <p class="stat-value">$1,200.00</p>
+                        <span class="trend up">+15.0%</span>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="stat-card">
+                        <h3>Active Subscriptions</h3>
+                        <p class="stat-value">8</p>
+                        <span class="trend neutral">0.0%</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
