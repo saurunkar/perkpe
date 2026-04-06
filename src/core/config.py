@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     ALLOYDB_PASSWORD: Optional[str] = None
     
     # Vertex AI / GCP Settings
-    GCP_PROJECT_ID: str = "sentinel-finance-os"
+    GCP_PROJECT_ID: str = "gdgpune-455206"
     GCP_REGION: str = "us-central1"
     
     # Application Settings

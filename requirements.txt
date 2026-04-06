@@ -49,7 +49,6 @@ pytest-cov==7.1.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 requests==2.33.1
-sentinel-finance-os @ file:///home/growlt324/Desktop/GCP_agent/sentinel-finance-os
 six==1.17.0
 sniffio==1.3.1
 starlette==1.0.0

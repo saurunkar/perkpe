@@ -6,7 +6,7 @@
 set -e # Exit on any error
 
 # 1. Configuration
-GCP_PROJECT_ID="your-project-id" # Please replace with your actual GCP Project ID
+GCP_PROJECT_ID="gdgpune-455206" # Set to your actual GCP Project ID
 VPC_CONNECTOR="sentinel-vpc-connector"
 SERVICE_YAML="service.yaml"
 
