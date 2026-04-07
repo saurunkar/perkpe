@@ -49,7 +49,7 @@
             <p class="wizard-desc">Sentinel will scan your inbox for credit card statements, reward emails, and subscription alerts to automatically identify the cards you hold.</p>
             <div class="budget-form" style="margin-bottom: 20px;">
                 <label>Gmail Email<input type="email" id="wizard-gmail-id" class="budget-input" placeholder="you@gmail.com"></label>
-                <label>App Password<input type="password" id="wizard-gmail-pass" class="budget-input" placeholder="16-character app pass"></label>
+                <label>App Password <a href="#" onclick="document.getElementById('password-help-modal').classList.remove('hidden')" style="font-size:12px; color:#3b82f6; text-decoration:none;">(how to generate app password?)</a><input type="password" id="wizard-gmail-pass" class="budget-input" placeholder="16-character app pass"></label>
             </div>
             <div class="gmail-status" id="gmail-status">
                 <p style="color:#94a3b8;font-size:14px">Your credentials are saved locally. No demo data is used.</p>
@@ -143,6 +143,28 @@
             <div class="spinner"></div>
             <p>Agents searching for best deals...</p>
             <p class="loading-sub" id="search-status-text">Checking prices and card offers...</p>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────── APP PASSWORD HELP MODAL ──────────────── -->
+<div class="modal-overlay hidden" id="password-help-modal">
+    <div class="modal-card" style="max-width: 500px">
+        <div class="modal-header">
+            <h2 style="font-size: 1.25rem;">🔐 How to Generate an App Password</h2>
+            <button class="modal-close" onclick="document.getElementById('password-help-modal').classList.add('hidden')">✕</button>
+        </div>
+        <div style="font-size: 14px; color: #cbd5e1; line-height: 1.6; text-align: left; padding-top: 10px;">
+            <p style="margin-bottom: 8px;">To connect securely, do not use your regular Gmail password. You must generate a Google App Password.</p>
+            <ol style="padding-left: 20px; margin-bottom: 12px;">
+                <li style="margin-bottom: 4px;">Go to your Google Account (<a href="https://myaccount.google.com/security" target="_blank" style="color:#3b82f6; text-decoration:none;">Security settings</a>).</li>
+                <li style="margin-bottom: 4px;">Ensure <strong>2-Step Verification</strong> is ON.</li>
+                <li style="margin-bottom: 4px;">Search for <strong>"App passwords"</strong> in the top search bar.</li>
+                <li style="margin-bottom: 4px;">Select <strong>Other (Custom name)</strong> and name it <em>Sentinel</em>.</li>
+                <li style="margin-bottom: 4px;">Click <strong>Generate</strong>.</li>
+                <li>Copy the 16-character code, remove the spaces, and paste it here.</li>
+            </ol>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="document.getElementById('password-help-modal').classList.add('hidden')">Got it</button>
         </div>
     </div>
 </div>
