@@ -50,3 +50,11 @@ brain/
 *walkthrough.md
 *task.md
 *implementation_plan.md
+
+# Database and Credentials
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*credentials.json
+*token.json

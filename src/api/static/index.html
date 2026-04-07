@@ -3,63 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentinel Finance OS | Dashboard</title>
+    <title>Sentinel Finance OS</title>
+    <meta name="description" content="Sentinel Finance OS — AI-powered credit card rewards optimizer.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-theme">
-    <div class="app-container">
-        <aside class="sidebar">
-            <div class="logo">
-                <span class="logo-icon">S</span>
-                <span class="logo-text">Sentinel</span>
+
+<!-- ──────────────── SETUP WIZARD ──────────────── -->
+<div class="wizard-overlay" id="wizard-overlay">
+    <div class="wizard-card">
+        <!-- Step indicators -->
+        <div class="wizard-steps" id="wizard-steps">
+            <div class="step-dot active" data-step="1"></div>
+            <div class="step-line"></div>
+            <div class="step-dot" data-step="2"></div>
+            <div class="step-line"></div>
+            <div class="step-dot" data-step="3"></div>
+            <div class="step-line"></div>
+            <div class="step-dot" data-step="4"></div>
+            <div class="step-line"></div>
+            <div class="step-dot" data-step="5"></div>
+        </div>
+
+        <!-- Step 1: Welcome -->
+        <div class="wizard-step" id="step-1">
+            <div class="wizard-emoji">🛡️</div>
+            <h2 class="wizard-title">Welcome to Sentinel Finance OS</h2>
+            <p class="wizard-desc">Your AI-powered financial co-pilot. Sentinel scans your Gmail to discover your credit cards, finds the best deals for every purchase, and maximizes your Effective Realized Value (ERV).</p>
+            <div class="wizard-features">
+                <div class="feature-item">📧 <span>Scans Gmail for credit card emails</span></div>
+                <div class="feature-item">🃏 <span>Auto-detects your cards</span></div>
+                <div class="feature-item">🔍 <span>Searches best deal per card for any purchase</span></div>
+                <div class="feature-item">💰 <span>Shows you exactly which card to use</span></div>
             </div>
-            <nav class="nav-menu">
-                <a href="#" class="nav-item active" id="nav-dashboard">Dashboard</a>
-                <a href="#" class="nav-item" id="nav-accounts">Accounts</a>
-                <a href="#" class="nav-item" id="nav-offers">Offers</a>
-                <a href="#" class="nav-item" id="nav-settings">Settings</a>
-            </nav>
-            <div class="user-profile">
-                <div class="avatar">U</div>
-                <div class="user-info">
-                    <p class="user-name">User Name</p>
-                    <p class="user-status">Active</p>
+            <button class="btn btn-primary wizard-btn" onclick="wizardStep(2)">Get Started →</button>
+        </div>
+
+        <!-- Step 2: Gmail Scan -->
+        <div class="wizard-step hidden" id="step-2">
+            <div class="wizard-emoji">📧</div>
+            <h2 class="wizard-title">Connect Gmail</h2>
+            <p class="wizard-desc">Sentinel will scan your inbox for credit card statements, reward emails, and subscription alerts to automatically identify the cards you hold.</p>
+            <div class="gmail-status" id="gmail-status">
+                <p style="color:#94a3b8;font-size:14px">Your emails are read-only and never stored.</p>
+            </div>
+            <button class="btn btn-primary wizard-btn" id="btn-scan" onclick="startGmailScan()">
+                📧 Scan Gmail for Cards
+            </button>
+            <button class="btn btn-outline wizard-btn" onclick="skipToManual()">Skip — Enter cards manually</button>
+        </div>
+
+        <!-- Step 3: Review Cards -->
+        <div class="wizard-step hidden" id="step-3">
+            <div class="wizard-emoji">🃏</div>
+            <h2 class="wizard-title">Your Credit Cards</h2>
+            <p class="wizard-desc" id="step3-desc">We found these cards in your inbox. Check the ones you have:</p>
+            <div id="card-checklist" class="card-checklist"></div>
+            <div class="card-add-row">
+                <input type="text" id="manual-card-input" class="budget-input" placeholder="Add a card manually (e.g. Axis Magnus)">
+                <button class="btn btn-outline" onclick="addManualCard()">+ Add</button>
+            </div>
+            <button class="btn btn-primary wizard-btn" id="btn-approve-cards" onclick="approveCards()">
+                Save These Cards →
+            </button>
+        </div>
+
+        <!-- Step 4: Enriching -->
+        <div class="wizard-step hidden" id="step-4">
+            <div class="wizard-emoji">🔍</div>
+            <h2 class="wizard-title">Enriching Your Cards</h2>
+            <p class="wizard-desc">Agents are searching the web for current offers, cashback rates, and benefits for each of your cards...</p>
+            <div class="enrich-progress" id="enrich-progress">
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+                <p class="progress-text" id="progress-text">Starting...</p>
+            </div>
+            <div id="enrich-cards-list" class="enrich-cards-list"></div>
+        </div>
+
+        <!-- Step 5: Done -->
+        <div class="wizard-step hidden" id="step-5">
+            <div class="wizard-emoji">🎉</div>
+            <h2 class="wizard-title">You're All Set!</h2>
+            <p class="wizard-desc">Your cards are saved and enriched with the latest offers. Sentinel is ready to find the best deal for any purchase.</p>
+            <div id="final-card-summary" class="final-card-summary"></div>
+            <button class="btn btn-primary wizard-btn" onclick="finishSetup()">
+                Launch Dashboard →
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────── PRODUCT SEARCH MODAL ──────────────── -->
+<div class="modal-overlay hidden" id="product-modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>🔍 Find Best Deal</h2>
+            <button class="modal-close" onclick="closeProductModal()">✕</button>
+        </div>
+
+        <!-- Search Input State -->
+        <div id="product-search-state">
+            <p class="modal-desc">Enter any product and Sentinel will compare deals across all your saved credit cards.</p>
+            <div class="product-input-row">
+                <input type="text" id="product-input" class="budget-input product-input"
+                    placeholder="e.g. Samsung TV 55 inch, iPhone 16, Laptop..."
+                    onkeydown="if(event.key==='Enter') searchProduct()">
+                <button class="btn btn-primary" id="btn-search-product" onclick="searchProduct()">Search</button>
+            </div>
+            <div class="quick-searches">
+                <span class="quick-label">Try:</span>
+                <button class="quick-btn" onclick="quickSearch('Samsung TV 55 inch')">Samsung TV 55"</button>
+                <button class="quick-btn" onclick="quickSearch('iPhone 16 Pro')">iPhone 16 Pro</button>
+                <button class="quick-btn" onclick="quickSearch('Samsung Galaxy S25')">Galaxy S25</button>
+                <button class="quick-btn" onclick="quickSearch('Sony WH-1000XM5 headphones')">Sony Headphones</button>
+            </div>
+        </div>
+
+        <!-- Results State -->
+        <div id="product-results-state" class="hidden">
+            <div class="results-header">
+                <div>
+                    <p class="results-product" id="results-product-name"></p>
+                    <p class="results-price-info" id="results-base-price"></p>
                 </div>
+                <button class="btn btn-outline" onclick="newSearch()">← New Search</button>
             </div>
-        </aside>
+            <div id="deal-comparison" class="deal-comparison"></div>
+        </div>
 
-        <main class="main-content">
-            <header class="top-bar">
-                <h1>Financial Intelligence</h1>
-                <div class="date-display" id="current-date">Thursday, April 2, 2026</div>
-            </header>
+        <!-- Loading State -->
+        <div id="product-loading-state" class="hidden product-loading">
+            <div class="spinner"></div>
+            <p>Agents searching for best deals...</p>
+            <p class="loading-sub" id="search-status-text">Checking prices and card offers...</p>
+        </div>
+    </div>
+</div>
 
-            <section class="dashboard-grid">
-                <!-- Offer of the Day Section -->
+<!-- ──────────────── MAIN APP ──────────────── -->
+<div class="app-container hidden" id="main-app">
+    <aside class="sidebar">
+        <div class="logo">
+            <span class="logo-icon">S</span>
+            <span class="logo-text">Sentinel</span>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active" id="nav-dashboard" data-tab="dashboard"><span class="nav-icon">⚡</span> Dashboard</a>
+            <a href="#" class="nav-item" id="nav-accounts" data-tab="accounts"><span class="nav-icon">💳</span> My Cards</a>
+            <a href="#" class="nav-item" id="nav-offers" data-tab="offers"><span class="nav-icon">🎯</span> Offers</a>
+            <a href="#" class="nav-item" id="nav-gmail" data-tab="gmail"><span class="nav-icon">📧</span> Gmail Scan</a>
+            <a href="#" class="nav-item" id="nav-settings" data-tab="settings"><span class="nav-icon">⚙️</span> Settings</a>
+        </nav>
+        <div class="user-profile">
+            <div class="avatar">U</div>
+            <div class="user-info">
+                <p class="user-name">User Name</p>
+                <p class="user-status">Active</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <h1 id="page-title">Financial Intelligence</h1>
+            <div class="top-bar-actions">
+                <button class="btn btn-success" id="btn-find-deal" onclick="openProductModal()">🔍 Find Best Deal</button>
+                <button class="btn btn-outline" id="btn-scan-gmail">📧 Scan Gmail</button>
+                <button class="btn btn-primary" id="btn-run-auction">⚡ Run Agents</button>
+                <div class="date-display" id="current-date"></div>
+            </div>
+        </header>
+
+        <!-- Loading overlay -->
+        <div class="loading-overlay hidden" id="loading-overlay">
+            <div class="spinner"></div>
+            <p class="loading-text" id="loading-text">Agents working...</p>
+        </div>
+
+        <!-- ── DASHBOARD TAB ── -->
+        <section class="tab-content active" id="tab-dashboard">
+            <div class="dashboard-grid">
                 <div class="grid-item span-full" id="offer-of-the-day-container">
                     <div class="offer-card premium-card">
-                        <div class="card-badge">FINANCIAL WINNING MOVE</div>
+                        <div class="agent-badge">⚡ FINANCIAL WINNING MOVE</div>
                         <div class="offer-content">
                             <div class="offer-details">
-                                <h2 id="offer-title">Chase Sapphire Rewards Optimization</h2>
-                                <p id="offer-description">50,000 points expiring soon. Redirect your lifestyle spend to maximize 3x multipliers before Oct 31st.</p>
+                                <h2 id="offer-title">Running agents...</h2>
+                                <p id="offer-description">Please wait while agents scan for the best deal.</p>
                                 <div class="offer-meta">
-                                    <span class="erv-badge">ERV: $750.00</span>
-                                    <span class="category-badge">Lifestyle</span>
+                                    <span class="erv-badge" id="offer-erv">ERV: —</span>
+                                    <span class="category-badge" id="offer-category">—</span>
                                 </div>
                             </div>
                             <div class="offer-action">
                                 <button class="btn btn-primary" id="btn-apply">Execute Move</button>
                                 <button class="btn btn-secondary" id="btn-dismiss">Dismiss</button>
+                                <button class="btn btn-outline" id="btn-refresh-offer" title="Refresh">↻</button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Secondary Stats -->
                 <div class="grid-item">
                     <div class="stat-card">
                         <h3>Total Balance</h3>
@@ -70,20 +216,128 @@
                 <div class="grid-item">
                     <div class="stat-card">
                         <h3>Monthly Savings</h3>
-                        <p class="stat-value">$1,200.00</p>
-                        <span class="trend up">+15.0%</span>
+                        <p class="stat-value" id="stat-savings">Calculating...</p>
+                        <span class="trend up" id="stat-savings-trend"></span>
                     </div>
                 </div>
                 <div class="grid-item">
                     <div class="stat-card">
-                        <h3>Active Subscriptions</h3>
-                        <p class="stat-value">8</p>
-                        <span class="trend neutral">0.0%</span>
+                        <h3>Saved Cards</h3>
+                        <p class="stat-value" id="stat-cards">—</p>
+                        <span class="trend neutral" id="stat-cards-label">from setup</span>
                     </div>
                 </div>
-            </section>
-        </main>
-    </div>
-    <script src="script.js"></script>
+                <div class="grid-item span-full">
+                    <div class="stat-card agent-log-card">
+                        <h3>🤖 Agent Activity Log</h3>
+                        <div id="agent-log" class="agent-log">
+                            <p class="log-entry muted">Click "Run Agents" to start the financial auction...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── MY CARDS TAB ── -->
+        <section class="tab-content hidden" id="tab-accounts">
+            <div class="dashboard-grid">
+                <div class="grid-item span-full">
+                    <div class="stat-card">
+                        <h3>💳 Your Credit Cards</h3>
+                        <p class="section-subtitle">Cards saved during setup, enriched with current offers</p>
+                        <button class="btn btn-outline" style="margin-top:8px" onclick="resetSetup()">↺ Re-run Setup</button>
+                    </div>
+                </div>
+                <div id="accounts-list" class="grid-item span-full">
+                    <div class="loading-placeholder">Loading your cards...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── OFFERS TAB ── -->
+        <section class="tab-content hidden" id="tab-offers">
+            <div class="dashboard-grid">
+                <div class="grid-item span-full">
+                    <div class="stat-card">
+                        <h3>🎯 All Current Deals</h3>
+                        <p class="section-subtitle">Real-time deals found by specialist agents for your cards</p>
+                        <div class="filter-bar">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="lifestyle">Lifestyle</button>
+                            <button class="filter-btn" data-filter="travel">Travel</button>
+                            <button class="filter-btn" data-filter="utility">Utility</button>
+                            <button class="filter-btn" data-filter="gmail">From Inbox</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="offers-list" class="grid-item span-full">
+                    <div class="loading-placeholder">Click "Run Agents" to discover deals...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── GMAIL SCAN TAB ── -->
+        <section class="tab-content hidden" id="tab-gmail">
+            <div class="dashboard-grid">
+                <div class="grid-item span-full">
+                    <div class="stat-card">
+                        <h3>📧 Gmail Reward Scanner</h3>
+                        <p class="section-subtitle">Scans your inbox for reward points, subscriptions, and cashback offers</p>
+                        <button class="btn btn-primary" id="btn-scan-gmail-full">Scan Gmail Now</button>
+                    </div>
+                </div>
+                <div id="gmail-results" class="grid-item span-full">
+                    <div class="loading-placeholder">Gmail scan results will appear here...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── SETTINGS TAB ── -->
+        <section class="tab-content hidden" id="tab-settings">
+            <div class="dashboard-grid">
+                <div class="grid-item span-full">
+                    <div class="stat-card">
+                        <h3>⚙️ Agent Settings</h3>
+                        <p class="section-subtitle">Configure active agents and spending categories</p>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="stat-card">
+                        <h3>Active Agents</h3>
+                        <div class="toggle-list" id="agent-toggle-list">Loading...</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="stat-card">
+                        <h3>Monthly Budgets</h3>
+                        <div class="budget-form">
+                            <label>General Budget (₹)<input type="number" id="input-budget" class="budget-input" value="15000"></label>
+                            <label>Travel Budget (₹)<input type="number" id="input-travel" class="budget-input" value="30000"></label>
+                            <label>Monthly Bills (₹)<input type="number" id="input-bills" class="budget-input" value="4000"></label>
+                            <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-item span-full">
+                    <div class="stat-card">
+                        <h3>Mute a Category</h3>
+                        <div class="intent-form">
+                            <select id="intent-category" class="budget-input">
+                                <option value="travel">Travel</option>
+                                <option value="lifestyle">Lifestyle</option>
+                                <option value="utility">Utility</option>
+                            </select>
+                            <button class="btn btn-secondary" id="btn-mute-category">Mute</button>
+                            <button class="btn btn-outline" id="btn-unmute-all">Unmute All</button>
+                        </div>
+                        <div id="muted-display" class="muted-display"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>

@@ -4,14 +4,10 @@ metadata:
   name: sentinel-finance-os
   labels:
     cloud.googleapis.com/location: us-central1
+  annotations:
+    run.googleapis.com/launch-stage: BETA
 spec:
   template:
-    metadata:
-      annotations:
-        # VPC Connector for AlloyDB Private IP access
-        run.googleapis.com/vpc-access-connector: sentinel-vpc-connector
-        # Force all egress through VPC for security
-        run.googleapis.com/vpc-access-egress: all-traffic
     spec:
       containerConcurrency: 80
       timeoutSeconds: 300
@@ -29,7 +25,7 @@ spec:
         - name: APP_ENV
           value: "production"
         - name: ALLOYDB_HOST
-          value: "10.0.0.1" # Example Private IP
+          value: "10.11.0.2"
         - name: ALLOYDB_DB
           value: "sentinel_db"
         - name: ALLOYDB_USER
@@ -42,3 +38,7 @@ spec:
               key: latest
         - name: GCP_PROJECT_ID
           value: "gdgpune-455206"
+      vpcAccess:
+        networkInterfaces:
+        - network: default
+          subnetwork: default
