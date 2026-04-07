@@ -3,8 +3,8 @@ Setup Wizard API Routes.
 Handles first-run onboarding: Gmail scan → card detection → approval → save → enrich.
 """
 from fastapi import APIRouter, BackgroundTasks
-from typing import List, Dict, Any
 from pydantic import BaseModel
+from typing import List, Dict, Any, Optional
 
 router = APIRouter(tags=["setup"])
 
@@ -14,6 +14,10 @@ _enrich_status: Dict[str, Any] = {"status": "idle", "progress": 0, "total": 0}
 
 class SaveCardsRequest(BaseModel):
     cards: List[Dict[str, Any]]
+
+class ScanGmailRequest(BaseModel):
+    email: Optional[str] = ""
+    password: Optional[str] = ""
 
 
 @router.get("/status")
@@ -25,31 +29,48 @@ async def setup_status():
 
 
 @router.post("/scan_gmail")
-async def scan_gmail_for_cards():
+async def scan_gmail_for_cards(req: ScanGmailRequest = None):
     """
     Scans Gmail inbox and detects credit cards from email content.
     Returns detected cards for user review.
     """
     from src.mcp.gmail_parser import gmail_parser
-    from src.mcp.card_detector import detect_cards_from_emails, get_demo_cards
+    from src.mcp.card_detector import detect_cards_from_emails
+    from src.api.v1_routes import _user_settings
 
     try:
-        # Fetch emails from Gmail (or demo mode)
+        # Check settings
+        email_to_use = req.email if req and req.email else _user_settings.get("gmail_email")
+        password_to_use = req.password if req and req.password else _user_settings.get("gmail_password")
+        
+        if not email_to_use or not password_to_use:
+            return {
+                "status": "ERROR",
+                "message": "Gmail ID and App Password are not configured. Please add them in Settings.",
+                "cards": [],
+                "emails_scanned": 0,
+                "source": "error"
+            }
+
+        # Override credentials in settings
+        _user_settings["gmail_email"] = email_to_use
+        _user_settings["gmail_password"] = password_to_use
+
+        # Fetch emails from Gmail
         emails = await gmail_parser.fetch_emails(max_results=30)
 
         # Detect credit cards from emails
         detected_cards = await detect_cards_from_emails(emails)
         print(f"Detected {len(detected_cards)} cards from {len(emails)} emails")
 
-        # If no cards detected (no Gmail or no card emails), use demo set
+        # If no cards detected, return nothing explicitly
         if not detected_cards:
-            demo_cards = get_demo_cards()
             return {
-                "status": "DEMO_MODE",
-                "message": "No cards detected automatically. Showing suggested cards — check the ones you have.",
-                "cards": demo_cards,
+                "status": "ERROR",
+                "message": "No cards detected automatically from your emails. Please add manually.",
+                "cards": [],
                 "emails_scanned": len(emails),
-                "source": "demo"
+                "source": "gmail"
             }
 
         return {
@@ -61,13 +82,12 @@ async def scan_gmail_for_cards():
         }
     except Exception as e:
         print(f"scan_gmail error: {e}")
-        from src.mcp.card_detector import get_demo_cards
         return {
-            "status": "DEMO_MODE",
-            "message": "Gmail scan failed. Showing suggested cards.",
-            "cards": get_demo_cards(),
+            "status": "ERROR",
+            "message": f"Gmail scan failed: {e}",
+            "cards": [],
             "emails_scanned": 0,
-            "source": "demo"
+            "source": "error"
         }
 
 

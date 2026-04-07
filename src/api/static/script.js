@@ -48,6 +48,9 @@ function wizardStep(num) {
 }
 
 async function startGmailScan() {
+    const email = $('wizard-gmail-id')?.value.trim();
+    const password = $('wizard-gmail-pass')?.value.trim();
+
     const btn = $('btn-scan');
     const statusEl = $('gmail-status');
     btn.disabled = true;
@@ -55,21 +58,28 @@ async function startGmailScan() {
     statusEl.innerHTML = `<p style="color:#06b6d4;font-size:14px">🔍 Scanning your Gmail inbox for credit card emails...</p>`;
 
     try {
-        const res = await fetch(`${SETUP_API}/scan_gmail`, { method: 'POST' });
+        const res = await fetch(`${SETUP_API}/scan_gmail`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email || '', password: password || '' })
+        });
         const data = await res.json();
 
         detectedCards = data.cards || [];
 
-        const modeText = data.source === 'demo'
-            ? '⚠️ Demo mode: check the cards you hold.'
-            : `✅ Scanned ${data.emails_scanned} emails. Found ${detectedCards.length} card(s).`;
+        if (data.status === 'ERROR' || !detectedCards.length) {
+            statusEl.innerHTML = `<p style="color:#ef4444;font-size:13px">${data.message || 'No cards found or error occurred.'}</p>`;
+            btn.disabled = false;
+            btn.textContent = '📧 Scan Gmail for Cards';
+            return;
+        }
+
+        const modeText = `✅ Scanned ${data.emails_scanned} emails. Found ${detectedCards.length} card(s).`;
 
         statusEl.innerHTML = `<p class="scan-result">${modeText}</p>`;
 
         // Render checklist in step 3
-        $('step3-desc').textContent = data.source === 'demo'
-            ? 'Select the credit cards you have:'
-            : `We found these cards in your inbox. Check the ones you have:`;
+        $('step3-desc').textContent = `We found these cards in your inbox. Check the ones you have:`;
 
         renderCardChecklist(detectedCards);
         wizardStep(3);
@@ -81,15 +91,11 @@ async function startGmailScan() {
 }
 
 function skipToManual() {
-    // Jump to step 3 with demo cards pre-loaded
-    fetch(`${SETUP_API}/scan_gmail`, { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            detectedCards = data.cards || [];
-            renderCardChecklist(detectedCards);
-            $('step3-desc').textContent = 'Select the credit cards you have:';
-            wizardStep(3);
-        });
+    // Jump to step 3 with empty cards
+    detectedCards = [];
+    renderCardChecklist(detectedCards);
+    $('step3-desc').textContent = 'Enter the credit cards you have:';
+    wizardStep(3);
 }
 
 function renderCardChecklist(cards) {
@@ -572,6 +578,18 @@ async function loadSettings() {
         if ($('input-budget')) $('input-budget').value = data.monthly_budget || 15000;
         if ($('input-travel')) $('input-travel').value = data.travel_budget || 30000;
         if ($('input-bills')) $('input-bills').value = data.monthly_bills || 4000;
+        if ($('input-gmail-id')) $('input-gmail-id').value = data.gmail_email || '';
+        if ($('input-gmail-pass')) $('input-gmail-pass').value = data.gmail_password || '';
+
+        const warningStrip = $('gmail-warning-strip');
+        if (warningStrip) {
+            if (!data.gmail_email || !data.gmail_password) {
+                warningStrip.classList.remove('hidden');
+            } else {
+                warningStrip.classList.add('hidden');
+            }
+        }
+        
         const mutedDisplay = $('muted-display');
         if (mutedDisplay) mutedDisplay.innerHTML = (data.muted_categories || []).map(c => `<span class="muted-tag">🔇 ${c}</span>`).join('') || '<span style="color:#475569;font-size:13px">No categories muted.</span>';
         const agentList = $('agent-toggle-list');
@@ -600,6 +618,18 @@ async function saveSettings() {
     const body = { monthly_budget: parseInt($('input-budget')?.value), travel_budget: parseInt($('input-travel')?.value), monthly_bills: parseInt($('input-bills')?.value) };
     await fetch(`${API}/settings`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
     log('Settings saved.', 'success');
+}
+
+async function saveGmailSettings() {
+    const email = $('input-gmail-id')?.value.trim();
+    const pass = $('input-gmail-pass')?.value.trim();
+    await fetch(`${API}/settings`, { 
+        method: 'POST', 
+        headers: {'Content-Type':'application/json'}, 
+        body: JSON.stringify({ gmail_email: email, gmail_password: pass }) 
+    });
+    log('Gmail settings saved.', 'success');
+    loadSettings();
 }
 
 async function muteCategory() {
@@ -652,6 +682,7 @@ function initDashboard() {
     });
     $('btn-refresh-offer').addEventListener('click', loadOfferOfTheDay);
     $('btn-save-settings')?.addEventListener('click', saveSettings);
+    $('btn-save-gmail')?.addEventListener('click', saveGmailSettings);
     $('btn-mute-category')?.addEventListener('click', muteCategory);
     $('btn-unmute-all')?.addEventListener('click', unmuteAll);
 

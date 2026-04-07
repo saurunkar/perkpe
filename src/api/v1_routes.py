@@ -14,14 +14,11 @@ _user_intents: Dict[str, Dict[str, str]] = {}
 _user_settings = {
     "active_agents": ["lifestyle", "travel", "utility"],
     "muted_categories": [],
-    "cards": [
-        {"name": "Chase Sapphire Preferred", "type": "travel", "network": "Visa"},
-        {"name": "HDFC Millennia", "type": "cashback", "network": "Mastercard"},
-        {"name": "Axis Bank Magnus", "type": "travel", "network": "Visa"},
-    ],
     "monthly_budget": 15000,
     "travel_budget": 30000,
     "monthly_bills": 4000,
+    "gmail_email": "",
+    "gmail_password": "",
 }
 
 
@@ -60,14 +57,17 @@ def _build_arbitrator():
     return ArbitratorAgent(specialists)
 
 
-def _build_user_context():
-    cards = _user_settings.get("cards", [])
-    card = cards[0]["name"] if cards else "HDFC Millennia"
+async def _build_user_context():
+    from src.data.local_db import get_cards
+    cards = await get_cards()
+    card = cards[0]["name"] if cards else "General Credit Card"
     return {
         "card": card,
         "monthly_budget": _user_settings.get("monthly_budget", 15000),
         "travel_budget": _user_settings.get("travel_budget", 30000),
         "monthly_bills": _user_settings.get("monthly_bills", 4000),
+        "gmail_email": _user_settings.get("gmail_email", ""),
+        "gmail_password": _user_settings.get("gmail_password", ""),
     }
 
 
@@ -96,7 +96,7 @@ async def get_offer_of_the_day():
     # Run a fresh auction
     try:
         arbitrator = _build_arbitrator()
-        user_context = _build_user_context()
+        user_context = await _build_user_context()
         result = await arbitrator.generate_winning_move("default_user", user_context)
         _auction_result = result
 
@@ -134,7 +134,7 @@ async def trigger_auction(background_tasks: BackgroundTasks):
         global _auction_result
         try:
             arbitrator = _build_arbitrator()
-            user_context = _build_user_context()
+            user_context = await _build_user_context()
             result = await arbitrator.generate_winning_move("default_user", user_context)
             _auction_result = result
             print(f"Auction complete: {result}")
@@ -155,7 +155,7 @@ async def get_all_offers():
     from src.agents.specialist_utility import UtilitySpecialist
     from src.mcp.realtime_search import deal_search
 
-    user_context = _build_user_context()
+    user_context = await _build_user_context()
     card = user_context["card"]
 
     # Build queries per category
@@ -204,16 +204,18 @@ async def get_all_offers():
 async def get_accounts():
     """Returns configured credit cards and their current offer summaries."""
     from src.mcp.realtime_search import deal_search
+    from src.data.local_db import get_cards
 
     accounts = []
-    for card in _user_settings.get("cards", []):
+    cards = await get_cards()
+    for card in cards:
         query = f"{card['name']} best current offer cashback reward"
         deals = await deal_search.search_deals(query, num_results=2)
         top_deal = deals[0] if deals else {}
         accounts.append({
             "name": card["name"],
-            "type": card["type"],
-            "network": card["network"],
+            "type": card.get("card_type", ""),
+            "network": card.get("network", ""),
             "top_offer": top_deal.get("snippet", "No current offers found.")[:200],
             "offer_title": top_deal.get("title", "")[:100],
         })
@@ -231,7 +233,7 @@ async def get_settings():
 async def update_settings(settings: Dict[str, Any]):
     """Updates user settings (active agents, muted categories, budget)."""
     global _user_settings
-    for key in ("active_agents", "muted_categories", "monthly_budget", "travel_budget", "monthly_bills"):
+    for key in ("active_agents", "muted_categories", "monthly_budget", "travel_budget", "monthly_bills", "gmail_email", "gmail_password"):
         if key in settings:
             _user_settings[key] = settings[key]
     _auction_result.clear() if isinstance(_auction_result, dict) else None

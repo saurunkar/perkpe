@@ -101,51 +101,6 @@ async def detect_cards_from_emails(emails: List[Dict[str, Any]]) -> List[Dict[st
     return list(detected.values())
 
 
-def get_demo_cards() -> List[Dict[str, Any]]:
-    """Returns a realistic demo card set for when Gmail is not connected."""
-    return [
-        {
-            "name": "Chase Sapphire Preferred",
-            "bank": "Chase",
-            "network": "Visa",
-            "card_type": "travel",
-            "cashback_rate": 0.03,
-            "annual_fee": 95.0,
-            "benefits": ["3x points on dining", "3x on travel", "60,000 bonus points"],
-            "source": "demo"
-        },
-        {
-            "name": "HDFC Millennia Credit Card",
-            "bank": "HDFC Bank",
-            "network": "Mastercard",
-            "card_type": "cashback",
-            "cashback_rate": 0.05,
-            "annual_fee": 1000.0,
-            "benefits": ["5% cashback on Amazon/Flipkart", "2.5% on all online spends"],
-            "source": "demo"
-        },
-        {
-            "name": "Axis Bank Magnus",
-            "bank": "Axis Bank",
-            "network": "Visa",
-            "card_type": "travel",
-            "cashback_rate": 0.035,
-            "annual_fee": 12500.0,
-            "benefits": ["Unlimited domestic lounge", "4x miles on travel", "Edge Miles"],
-            "source": "demo"
-        },
-        {
-            "name": "SBI SimplyCLICK",
-            "bank": "SBI Card",
-            "network": "Visa",
-            "card_type": "cashback",
-            "cashback_rate": 0.025,
-            "annual_fee": 499.0,
-            "benefits": ["10x reward points on Amazon", "5x on partner merchants"],
-            "source": "demo"
-        },
-    ]
-
 
 async def enrich_card_with_web(card: Dict[str, Any]) -> Dict[str, Any]:
     """

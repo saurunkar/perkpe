@@ -47,8 +47,12 @@
             <div class="wizard-emoji">📧</div>
             <h2 class="wizard-title">Connect Gmail</h2>
             <p class="wizard-desc">Sentinel will scan your inbox for credit card statements, reward emails, and subscription alerts to automatically identify the cards you hold.</p>
+            <div class="budget-form" style="margin-bottom: 20px;">
+                <label>Gmail Email<input type="email" id="wizard-gmail-id" class="budget-input" placeholder="you@gmail.com"></label>
+                <label>App Password<input type="password" id="wizard-gmail-pass" class="budget-input" placeholder="16-character app pass"></label>
+            </div>
             <div class="gmail-status" id="gmail-status">
-                <p style="color:#94a3b8;font-size:14px">Your emails are read-only and never stored.</p>
+                <p style="color:#94a3b8;font-size:14px">Your credentials are saved locally. No demo data is used.</p>
             </div>
             <button class="btn btn-primary wizard-btn" id="btn-scan" onclick="startGmailScan()">
                 📧 Scan Gmail for Cards
@@ -167,6 +171,9 @@
     </aside>
 
     <main class="main-content">
+        <div id="gmail-warning-strip" class="hidden" style="background-color: #ef4444; color: white; padding: 10px; text-align: center; font-weight: 500; border-radius: 8px; margin-bottom: 12px; font-size: 14px;">
+            ⚠️ Gmail account not configured or missing App Password. Please enter your Gmail ID and App Password in Settings to enable the Gmail Agent functionality. No demo data is allowed in production.
+        </div>
         <header class="top-bar">
             <h1 id="page-title">Financial Intelligence</h1>
             <div class="top-bar-actions">
@@ -315,6 +322,16 @@
                             <label>Travel Budget (₹)<input type="number" id="input-travel" class="budget-input" value="30000"></label>
                             <label>Monthly Bills (₹)<input type="number" id="input-bills" class="budget-input" value="4000"></label>
                             <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="stat-card">
+                        <h3>Gmail Agent Setup</h3>
+                        <div class="budget-form">
+                            <label>Gmail Email<input type="email" id="input-gmail-id" class="budget-input" placeholder="you@gmail.com"></label>
+                            <label>App Password<input type="password" id="input-gmail-pass" class="budget-input" placeholder="16-character code"></label>
+                            <button class="btn btn-primary" id="btn-save-gmail">Save Gmail Settings</button>
                         </div>
                     </div>
                 </div>
